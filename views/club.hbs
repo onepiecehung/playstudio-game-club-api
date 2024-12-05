@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Club Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .club {
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .club h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        .club p {
+            font-size: 16px;
+            margin: 5px 0;
+        }
+
+        .events {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .events ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .events li {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #eef2f3;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .toggle-events {
+            cursor: pointer;
+            color: #007bff;
+            font-size: 18px;
+            text-decoration: underline;
+        }
+
+        .toggle-events:hover {
+            color: #0056b3;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            font-size: 18px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pagination a {
+            margin: 0 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .pagination a:hover {
+            color: #0056b3;
+        }
+
+        .pagination .disabled {
+            color: #ccc;
+            pointer-events: none;
+        }
+
+        .pagination p {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    {{#each data.result}}
+        <div class="club">
+            <h1>Club: {{name}}</h1>
+            <h1>Club ID: {{id}}</h1>
+            <p><strong>Description:</strong> {{description}}</p>
+            <p><strong>Created At:</strong> {{createdAt}}</p>
+            <p><strong>Updated At:</strong> {{updatedAt}}</p>
+
+            <!-- Toggle Button for Events -->
+            <div class="toggle-events" onclick="toggleEvents('{{id}}')">
+                <p>Show Events</p>
+            </div>
+
+            <!-- Event Details (Initially hidden) -->
+            <div class="events" id="events-{{id}}">
+                <h2>Events:</h2>
+                {{#if events.length}}
+                    <ul>
+                        {{#each events}}
+                            <li>
+                                <p><strong>Event ID:</strong> {{id}}</p>
+                                <p><strong>Event Title:</strong> {{title}}</p>
+                                <p><strong>Description:</strong> {{description}}</p>
+                                <p><strong>Scheduled At:</strong> {{scheduledAt}}</p>
+                                <p><strong>Created At:</strong> {{createdAt}}</p>
+                                <p><strong>Updated At:</strong> {{updatedAt}}</p>
+                            </li>
+                        {{/each}}
+                    </ul>
+                {{else}}
+                    <p>No events available for this club.</p>
+                {{/if}}
+            </div>
+        </div>
+    {{/each}}
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <!-- Previous Page Link -->
+        <a href="javascript:void(0);" id="prevPageLink" 
+           class="{{#if data.metaData.previousPage}}{{else}}disabled{{/if}}" 
+           onclick="goToPage({{data.metaData.previousPage}}, {{data.metaData.pageSize}})">
+            Previous
+        </a>
+
+        <p>Page {{data.metaData.currentPage}} of {{data.metaData.totalPages}}</p>
+
+        <!-- Next Page Link -->
+        <a href="javascript:void(0);" id="nextPageLink" 
+           class="{{#if data.metaData.nextPage}}{{else}}disabled{{/if}}" 
+           onclick="goToPage({{data.metaData.nextPage}}, {{data.metaData.pageSize}})">
+            Next
+        </a>
+    </div>
+
+    <script>
+        // Function to toggle the visibility of the events section when the "Show Events" link is clicked
+        function toggleEvents(clubId) {
+            const eventsSection = document.getElementById('events-' + clubId);
+            const toggleLink = eventsSection.previousElementSibling;
+            
+            if (eventsSection.style.display === 'none' || eventsSection.style.display === '') {
+                eventsSection.style.display = 'block';
+                toggleLink.innerHTML = '<p>Hide Events</p>';
+            } else {
+                eventsSection.style.display = 'none';
+                toggleLink.innerHTML = '<p>Show Events</p>';
+            }
+        }
+
+        // Function to handle pagination and update the page
+        function goToPage(page, pageSize) {
+            if (page) {
+                const newUrl = `?page=${page}&pageSize=${pageSize}`;
+                
+                // Update the URL without reloading the page
+                window.history.pushState({ path: newUrl }, '', newUrl);
+
+                window.location.reload();
+
+                // Load the new page based on the updated URL (simulate loading data)
+                loadPage(page, pageSize);
+            }
+        }
+
+        // Simulate loading page data (replace with actual API call)
+        function loadPage(page, pageSize) {
+            // Log to verify URL update
+            console.log(`Loading data for page ${page} with page size ${pageSize}`);
+            
+            // Typically, here you would fetch new data from your API
+            // For example:
+            // fetch(`/api/clubs?page=${page}&pageSize=${pageSize}`)
+            //    .then(response => response.json())
+            //    .then(data => {
+            //        // Update the content on the page with the new data
+            //    })
+        }
+
+        // Listen for popstate event when the URL changes (browser back/forward navigation)
+        window.onpopstate = function(event) {
+            if (event.state && event.state.path) {
+                const urlParams = new URLSearchParams(window.location.search);
+                const page = urlParams.get('page');
+                const pageSize = urlParams.get('pageSize');
+                loadPage(page, pageSize);  // Reload page data when URL changes
+            }
+        };
+    </script>
+</body>
+</html>

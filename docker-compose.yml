@@ -1,0 +1,40 @@
+services:
+  app:
+    container_name: 'playstudio-game-club-api'
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: >
+      sh -c "yarn run start"
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mysqldb
+    networks:
+      - app-network
+
+  mysqldb:
+    container_name: 'playstudio-game-club-mysqldb'
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 'playstudio'
+      MYSQL_DATABASE: 'playstudio'
+      MYSQL_USER: 'playstudio'
+      MYSQL_PASSWORD: 'playstudio'
+    image: mysql
+    ports:
+      - '3306:3306'
+    volumes:
+      - ./mysql-volume:/var/lib/mysql
+      # - ./mysql-volume:/var/log/mysql
+    command: 'mysqld --innodb-flush-method=fsync --innodb-use-native-aio=0'
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    name: 'playstudio-game-club-api'
